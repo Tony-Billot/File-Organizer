@@ -84,3 +84,46 @@ CATEGORIES = {
 
 def get_category(extension):
     return CATEGORIES.get(extension.lower(), "Others")
+
+def organize_file(folder):
+    for item in folder.iterdir():
+        if item.is_file():
+            category = get_category(item.suffix)
+            category_folder = folder / category
+            category_folder.mkdir(exist_ok=True)
+            shutil.move(str(item), str(category_folder / item.name))
+        elif item.is_dir():
+            organize_file(item) 
+
+
+def create_folder(folder):
+    for category in set(CATEGORIES.values()):
+        (folder / category).mkdir(exist_ok=True)
+    (folder / "Others").mkdir(exist_ok=True)
+
+def get_files(folder):
+    files = []
+    for item in folder.iterdir():
+        if item.is_file():
+            files.append(item)
+        elif item.is_dir():
+            files.extend(get_files(item))
+    return files
+
+def move_file(file, destination_folder):
+    extension = file.suffix
+    category = get_category(extension)
+    category_folder = destination_folder / category
+    category_folder.mkdir(exist_ok=True)
+    shutil.move(str(file), str(category_folder / file.name))
+    print(f"Moved {file.name} to {category_folder} !")
+
+
+def organize(folder):
+    create_folder(folder)
+    organize_file(folder)
+    print("Files organized successfully!")
+
+
+if __name__ == "__main__":
+    organize(FOLDER)
