@@ -1,17 +1,29 @@
 import shutil
 import pathlib
 
-# read configuration
-
+# Read configuration file
+config_path = pathlib.Path(".config")
 config = {}
 
-with open(".config", "r") as f:
+with open(config_path, "r") as f:
     for line in f:
-        if "=" in line:
-            key, value = line.strip().split("=", 1)
-            config[key] = value
+        line = line.strip()
+        if "=" in line and not line.startswith("#"):  # ignore les commentaires
+            key, value = line.split("=", 1)
+            config[key.strip()] = value.strip()
+if "FOLDER" not in config or not config["FOLDER"]:
+    print("Erreur : la clé FOLDER est absente ou vide dans .config.")
+    print("Ajoutez cette ligne dans .config : FOLDER=/chemin/vers/dossier")
+    exit(1)
 
+# Check if the specified folder exists and is a directory
 FOLDER = pathlib.Path(config["FOLDER"])
+if not FOLDER.exists():
+    print(f"Erreur : le dossier spécifié n'existe pas : {FOLDER}")
+    exit(1)
+if not FOLDER.is_dir():
+    print(f"Erreur : le chemin spécifié n'est pas un dossier : {FOLDER}")
+    exit(1)
 
 CATEGORIES = {
     # 🖼️ Images
