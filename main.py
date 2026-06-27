@@ -103,25 +103,21 @@ def create_folder(folder):
 
 def get_files(folder):
     files = []
-
     ignored = set(CATEGORIES.values()) | {"Others"}
-
     for item in folder.iterdir():
         if item.is_file():
             files.append(item)
-
         elif item.is_dir() and item.name not in ignored:
             files.extend(get_files(item))
     return files
-
 
 def move_file(file, destination_folder):
     category = get_category(file.suffix)
     category_folder = destination_folder / category
     category_folder.mkdir(exist_ok=True)
-    shutil.move(str(file), str(category_folder / file.name))
+    target_path = get_unique_path(category_folder, file.name)
+    shutil.move(str(file), str(target_path))
     print(f"Moved {file.name} to {category_folder} !")
-
 
 def organize(folder):
     create_folder(folder)
@@ -130,6 +126,17 @@ def organize(folder):
     for file in files:
         move_file(file, folder)
     print("Files organized successfully!")
+
+
+def get_unique_path(destination_folder, file_name):
+    file_path = pathlib.Path(file_name)
+    base_name, extension = file_path.stem, file_path.suffix
+    counter = 1
+    new_file_name = file_name
+    while (destination_folder / new_file_name).exists():
+        new_file_name = f"{base_name} ({counter}){extension}"
+        counter += 1
+    return destination_folder / new_file_name
 
 
 if __name__ == "__main__":
